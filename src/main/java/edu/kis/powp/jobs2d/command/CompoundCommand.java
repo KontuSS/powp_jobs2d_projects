@@ -30,14 +30,10 @@ public class CompoundCommand implements ICompoundCommand {
     }
 
 
-
-    //Creates a new CompoundCommand from a list of commands.
     public static CompoundCommand fromListOfCommands(List<DriverCommand> commands) {
         return new CompoundCommand(commands);
     }
 
-    //Returns a new CompoundCommand with additional commands appended.
-    //Original compound command remains unchanged.
     public CompoundCommand append(List<DriverCommand> commands) {
         List<DriverCommand> newCommands = new ArrayList<>(this.commands);
         newCommands.addAll(commands);
@@ -52,17 +48,14 @@ public class CompoundCommand implements ICompoundCommand {
         return commands.isEmpty();
     }
 
-    //Builder class for flexible creation of CompoundCommand instances.
     public static class Builder {
         private final List<DriverCommand> commands = new ArrayList<>();
 
-        //Adds multiple commands to the builder.
         public Builder add(List<DriverCommand> commands) {
             this.commands.addAll(commands);
             return this;
         }
 
-        //Adds all commands from another compound command to the builder.
         public Builder add(CompoundCommand compoundCommand) {
             this.commands.addAll(compoundCommand.commands);
             return this;
@@ -78,13 +71,11 @@ public class CompoundCommand implements ICompoundCommand {
             return this;
         }
 
-        //Builds the CompoundCommand instance.
         public CompoundCommand build() {
             return new CompoundCommand(commands);
         }
     }
 
-    //Creates a new Builder instance for flexible command construction.
     public static Builder builder() {
         return new Builder();
     }
