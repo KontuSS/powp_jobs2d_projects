@@ -17,7 +17,6 @@ public interface DriverCommand {
 
     DriverCommand copy();
 
-}
     /**
      * Accepts a visitor for this command.
      * @param visitor the visitor to accept.

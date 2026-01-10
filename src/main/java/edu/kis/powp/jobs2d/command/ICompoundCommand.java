@@ -13,7 +13,7 @@ public interface ICompoundCommand extends DriverCommand {
 
     @Override
     ICompoundCommand copy();
-}
+
     /**
      * Accepts a visitor and delegates processing to it.
      * @param visitor the visitor to accept.

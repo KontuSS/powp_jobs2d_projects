@@ -26,7 +26,6 @@ public class SetPositionCommand implements DriverCommand {
         return new SetPositionCommand(posX, posY);
     }
 
-}
     /**
      * Accepts a visitor and calls its visit method for this command.
      * @param visitor the visitor to accept.

@@ -26,7 +26,6 @@ public class OperateToCommand implements DriverCommand {
         return new OperateToCommand(posX, posY);
     }
 
-}
     /**
      * Accepts a visitor and calls its visit method for this command.
      * @param visitor the visitor to accept.
