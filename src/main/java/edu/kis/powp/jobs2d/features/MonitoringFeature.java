@@ -1,135 +1,118 @@
 package edu.kis.powp.jobs2d.features;
 
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Logger;
 
 import edu.kis.powp.appbase.Application;
 import edu.kis.powp.jobs2d.Job2dDriver;
+import edu.kis.powp.jobs2d.drivers.DriverManager;
+import edu.kis.powp.jobs2d.drivers.UsageTrackingDriverDecorator;
 
 /**
- * Monitoring helper used from TestJobs2dApp: decorates any driver and
- * logs total travel (all moves) plus drawing usage (ink/filament) to the logger panel.
+ * Provides runtime monitoring of the currently selected driver. Users can enable
+ * monitoring through the menu, which wraps the active driver with a
+ * {@link UsageTrackingDriverDecorator} to track distances. The logged summaries
+ * show travel and drawing usage. This decouples monitoring from driver setup.
  */
 public final class MonitoringFeature {
 
-    // Every monitored driver lives here so menu actions can iterate them.
-    private static final List<UsageTrackingDriver> trackedDrivers = new ArrayList<>();
-    // Logger target; defaults to the application's main logger panel.
+    /** Holds the currently monitored driver, if any. */
+    private static UsageTrackingDriverDecorator monitoredDriver = null;
+
+    /** Reference to the driver manager to swap in/out decorated drivers. */
+    private static DriverManager driverManager;
+
+    /** Target logger where summaries are printed. */
     private static Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
     private MonitoringFeature() {
     }
 
     /**
-     * Called once in TestJobs2dApp during startup.
-     * Adds a "Monitoring" menu with two actions: print summaries and reset counters.
+     * Sets up the Monitoring menu with runtime actions to enable/disable monitoring,
+     * report usage, and reset counters. Called once during application startup.
+     *
+     * @param app               The application context.
+     * @param manager           The {@code DriverManager} to enable driver swapping.
+     * @param monitoringLogger  Custom logger; if {@code null}, uses the default application logger.
      */
-    public static void setupMonitoringPlugin(Application app, Logger monitoringLogger) {
+    public static void setupMonitoringPlugin(Application app, DriverManager manager, Logger monitoringLogger) {
+        driverManager = manager;
         if (monitoringLogger != null) {
             logger = monitoringLogger;
         }
 
         app.addComponentMenu(MonitoringFeature.class, "Monitoring", 0);
-        app.addComponentMenuElement(MonitoringFeature.class, "Report usage summary", MonitoringFeature::logAllUsage);
-        app.addComponentMenuElement(MonitoringFeature.class, "Reset usage counters", MonitoringFeature::resetAll);
+        app.addComponentMenuElement(MonitoringFeature.class, "Enable monitoring on current driver",
+                MonitoringFeature::enableMonitoring);
+        app.addComponentMenuElement(MonitoringFeature.class, "Disable monitoring", MonitoringFeature::disableMonitoring);
+        app.addComponentMenuElement(MonitoringFeature.class, "Report usage summary", MonitoringFeature::logUsage);
+        app.addComponentMenuElement(MonitoringFeature.class, "Reset counters", MonitoringFeature::resetCounters);
     }
 
     /**
-     * Used when drivers are registered (see TestJobs2dApp.setupDrivers).
-     * Wrap a driver so every move/draw is counted without touching its code.
+     * Menu action that enables monitoring on the currently selected driver.
+     * Creates a new {@link UsageTrackingDriverDecorator} around the current driver and
+     * replaces it in the manager so subsequent operations track distance and usage.
+     *
+     * @param e The action event triggered by the menu selection.
      */
-    public static Job2dDriver monitoredDriver(Job2dDriver baseDriver, String label) {
-        UsageTrackingDriver driver = new UsageTrackingDriver(baseDriver, label, logger);
-        trackedDrivers.add(driver);
-        return driver;
-    }
-
-    // Menu action: print a short summary for each monitored driver.
-    private static void logAllUsage(ActionEvent e) {
-        if (trackedDrivers.isEmpty()) {
-            logger.info("Monitoring: no drivers registered for tracking");
+    private static void enableMonitoring(ActionEvent e) {
+        if (monitoredDriver != null) {
+            logger.info("Monitoring: already enabled on current driver");
             return;
         }
-        trackedDrivers.forEach(UsageTrackingDriver::logSummary);
-    }
-
-    // Menu action: reset counters on every monitored driver.
-    private static void resetAll(ActionEvent e) {
-        trackedDrivers.forEach(UsageTrackingDriver::reset);
-        logger.info("Monitoring: counters reset");
+        Job2dDriver current = driverManager.getCurrentDriver();
+        monitoredDriver = new UsageTrackingDriverDecorator(current, current.toString());
+        driverManager.setCurrentDriver(monitoredDriver);
+        logger.info("Monitoring: enabled on current driver");
     }
 
     /**
-     * Decorator that counts distance while delegating real work to the wrapped driver.
+     * Menu action that disables monitoring on the currently monitored driver.
+     * Clears the monitored driver reference and stops tracking. Note that the original
+     * driver is lost; this is a simplified implementation.
+     *
+     * @param e The action event triggered by the menu selection.
      */
-    private static final class UsageTrackingDriver implements Job2dDriver {
-        private final Job2dDriver delegate;
-        private final Logger logger;
-        private final String label;
-
-        private int lastX = 0;
-        private int lastY = 0;
-        private double travelDistance = 0.0;
-        private double drawingDistance = 0.0;
-
-        UsageTrackingDriver(Job2dDriver delegate, String label, Logger logger) {
-            this.delegate = delegate;
-            this.label = label;
-            this.logger = logger == null ? Logger.getLogger(Logger.GLOBAL_LOGGER_NAME) : logger;
+    private static void disableMonitoring(ActionEvent e) {
+        if (monitoredDriver == null) {
+            logger.info("Monitoring: not currently enabled");
+            return;
         }
+        monitoredDriver = null;
+        logger.info("Monitoring: disabled");
+    }
 
-        // Called whenever the app repositions without drawing.
-        @Override
-        public void setPosition(int x, int y) {
-            registerMovement(x, y, false);
-            delegate.setPosition(x, y);
-            updatePosition(x, y);
+    /**
+     * Menu action that prints a usage summary for the currently monitored driver.
+     * Reports the total travel distance and drawing distance (ink/filament usage)
+     * to the logger.
+     *
+     * @param e The action event triggered by the menu selection.
+     */
+    private static void logUsage(ActionEvent e) {
+        if (monitoredDriver == null) {
+            logger.info("Monitoring: no driver currently monitored");
+            return;
         }
+        logger.info(String.format("[%s] usage summary -> travel=%.2f, ink=%.2f",
+                monitoredDriver.getLabel(), monitoredDriver.getTravelDistance(),
+                monitoredDriver.getDrawingDistance()));
+    }
 
-        // Called whenever the app draws a line to a point.
-        @Override
-        public void operateTo(int x, int y) {
-            registerMovement(x, y, true);
-            delegate.operateTo(x, y);
-            updatePosition(x, y);
+    /**
+     * Menu action that resets usage counters on the currently monitored driver.
+     * Sets both travel distance and drawing distance to zero.
+     *
+     * @param e The action event triggered by the menu selection.
+     */
+    private static void resetCounters(ActionEvent e) {
+        if (monitoredDriver == null) {
+            logger.info("Monitoring: no driver currently monitored");
+            return;
         }
-
-        // Shared counting logic for move/draw.
-        private void registerMovement(int x, int y, boolean drawing) {
-            double segment = Math.hypot(x - lastX, y - lastY);
-            travelDistance += segment; // Every move counts as travel.
-            if (drawing) {
-                drawingDistance += segment; // Drawing uses ink/filament.
-            }
-            logger.info(String.format("[%s] %s to (%d, %d); segment=%.2f; travel=%.2f; ink=%.2f", label,
-                    drawing ? "draw" : "move", x, y, segment, travelDistance, drawingDistance));
-        }
-
-        private void updatePosition(int x, int y) {
-            this.lastX = x;
-            this.lastY = y;
-        }
-
-        // Prints current counters for this driver.
-        void logSummary() {
-            logger.info(String.format("[%s] usage summary -> travel=%.2f, ink=%.2f", label, travelDistance,
-                    drawingDistance));
-        }
-
-        // Resets counters to zero.
-        void reset() {
-            travelDistance = 0.0;
-            drawingDistance = 0.0;
-            lastX = 0;
-            lastY = 0;
-            logger.info(String.format("[%s] monitoring counters reset", label));
-        }
-
-        @Override
-        public String toString() {
-            return String.format("%s [monitored]", delegate.toString());
-        }
+        monitoredDriver.reset();
+        logger.info("Monitoring: counters reset");
     }
 }

@@ -67,31 +67,18 @@ public class TestJobs2dApp {
 
         Job2dDriver basicLineDriver = new LineDriverAdapter(drawerController, LineFactory.getBasicLine(), "basic");
         DriverFeature.addDriver("Basic line Simulator", basicLineDriver);
-        // Add monitoring to basic line driver
-        Job2dDriver monitoredBasicLineDriver = MonitoringFeature.monitoredDriver(basicLineDriver, "Basic line");
-        DriverFeature.addDriver("Monitored Basic line Simulator", monitoredBasicLineDriver);
-
-        DriverFeature.getDriverManager().setCurrentDriver(monitoredBasicLineDriver);
 
         Job2dDriver specialLineDriver = new LineDriverAdapter(drawerController, LineFactory.getSpecialLine(), "special");
         DriverFeature.addDriver("Special line Simulator", specialLineDriver);
-        // Add monitoring to special line driver
-        Job2dDriver monitoredSpecialLineDriver = MonitoringFeature.monitoredDriver(specialLineDriver, "Special line");
-        DriverFeature.addDriver("Monitored Special line Simulator", monitoredSpecialLineDriver);
 
         Job2dDriver basicLineWithLoggerDriver = new DriverComposite(Arrays.asList(basicLineDriver, loggerDriver));
         DriverFeature.addDriver("Logger + Basic line", basicLineWithLoggerDriver);
-        // Add monitoring to composite driver
-        Job2dDriver monitoredBasicLineWithLoggerDriver = MonitoringFeature.monitoredDriver(basicLineWithLoggerDriver,
-            "Logger + Basic line");
-        DriverFeature.addDriver("Monitored Logger + Basic line", monitoredBasicLineWithLoggerDriver);
 
         Job2dDriver specialLineWithLoggerDriver = new DriverComposite(Arrays.asList(specialLineDriver, loggerDriver));
         DriverFeature.addDriver("Logger + Special line", specialLineWithLoggerDriver);
-        // Add monitoring to composite driver
-        Job2dDriver monitoredSpecialLineWithLoggerDriver = MonitoringFeature.monitoredDriver(specialLineWithLoggerDriver,
-            "Logger + Special line");
-        DriverFeature.addDriver("Monitored Logger + Special line", monitoredSpecialLineWithLoggerDriver);
+
+        // Set default driver
+        DriverFeature.getDriverManager().setCurrentDriver(basicLineDriver);
 
         DriverFeature.updateDriverInfo();
     }
@@ -136,8 +123,8 @@ public class TestJobs2dApp {
                 CommandsFeature.setupCommandManager();
 
                 DriverFeature.setupDriverPlugin(app);
-                MonitoringFeature.setupMonitoringPlugin(app, logger);
                 setupDrivers(app);
+                MonitoringFeature.setupMonitoringPlugin(app, DriverFeature.getDriverManager(), logger);
                 setupPresetTests(app);
                 setupCommandTests(app);
                 setupLogger(app);
