@@ -19,6 +19,9 @@ import edu.kis.powp.jobs2d.features.CommandsFeature;
 import edu.kis.powp.jobs2d.features.DrawerFeature;
 import edu.kis.powp.jobs2d.features.DriverFeature;
 
+import edu.kis.powp.jobs2d.drivers.TransformerDriver;
+import edu.kis.powp.jobs2d.drivers.RotationDriver;
+
 public class TestJobs2dApp {
     private final static Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
@@ -75,6 +78,19 @@ public class TestJobs2dApp {
 
         Job2dDriver specialLineWithLoggerDriver = new DriverComposite(Arrays.asList(specialLineDriver, loggerDriver));
         DriverFeature.addDriver("Logger + Special line", specialLineWithLoggerDriver);
+
+        Job2dDriver scaleDriver = new TransformerDriver(basicLineDriver, 2.0d, 2.0d);
+        DriverFeature.addDriver("Basic Line x2", scaleDriver);
+
+        Job2dDriver smallDriver = new TransformerDriver(basicLineDriver, 0.5d, 0.5d);
+        DriverFeature.addDriver("Basic Line x0.5", smallDriver);
+
+        Job2dDriver flipDriver = new TransformerDriver(basicLineDriver, -1.0d, 1.0d);
+        DriverFeature.addDriver("Basic Line Flip X", flipDriver);
+
+        Job2dDriver rotateDriver = new RotationDriver(basicLineDriver, 90);
+        DriverFeature.addDriver("Basic Line Rotate 90 degrees", rotateDriver);
+
 
         DriverFeature.updateDriverInfo();
     }
