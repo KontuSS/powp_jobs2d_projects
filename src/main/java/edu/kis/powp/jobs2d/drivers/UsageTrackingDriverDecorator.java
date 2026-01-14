@@ -1,20 +1,15 @@
 package edu.kis.powp.jobs2d.drivers;
 
-import java.util.logging.Logger;
-
 import edu.kis.powp.jobs2d.Job2dDriver;
 
 /**
  * A decorator that wraps any {@link Job2dDriver} and counts distance travelled
- * (all moves) and distance drawn (ink/filament usage). Automatically logs each
- * operation to the system logger so usage is always visible without needing
- * to request a report.
+ * (all moves) and distance drawn (ink/filament usage).
  */
 public class UsageTrackingDriverDecorator implements Job2dDriver {
 
     private final Job2dDriver delegate;
     private final String label;
-    private final Logger logger;
 
     private int lastX = 0;
     private int lastY = 0;
@@ -22,19 +17,18 @@ public class UsageTrackingDriverDecorator implements Job2dDriver {
     private double drawingDistance = 0.0;
 
     /**
-     * Wraps a driver to track its usage and automatically log operations.
+     * Wraps a driver to track its usage.
      *
      * @param delegate The driver to wrap and track.
-     * @param label    A name to identify this driver (used in logging).
+     * @param label    A name to identify this driver.
      */
     public UsageTrackingDriverDecorator(Job2dDriver delegate, String label) {
         this.delegate = delegate;
         this.label = label;
-        this.logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
     }
 
     /**
-     * Repositions without drawing. Counts as travel distance and logs to logger.
+     * Repositions without drawing. Counts as travel distance.
      *
      * @param x The target X coordinate.
      * @param y The target Y coordinate.
@@ -47,8 +41,7 @@ public class UsageTrackingDriverDecorator implements Job2dDriver {
     }
 
     /**
-     * Draws a line to the target position. Counts as both travel and drawing distance
-     * and logs to logger.
+     * Draws a line to the target position. Counts as both travel and drawing distance.
      *
      * @param x The target X coordinate.
      * @param y The target Y coordinate.
@@ -61,7 +54,7 @@ public class UsageTrackingDriverDecorator implements Job2dDriver {
     }
 
     /**
-     * Accumulates distance from the last position and logs the operation.
+     * Accumulates distance from the last position.
      *
      * @param x       The target X coordinate.
      * @param y       The target Y coordinate.
@@ -73,9 +66,6 @@ public class UsageTrackingDriverDecorator implements Job2dDriver {
         if (drawing) {
             drawingDistance += segment;
         }
-        // Always log to logger so user sees operations in real-time
-        logger.info(String.format("[%s] %s to (%d, %d); segment=%.2f; travel=%.2f; ink=%.2f", label,
-                drawing ? "draw" : "move", x, y, segment, travelDistance, drawingDistance));
     }
 
     /**
