@@ -47,6 +47,7 @@ public class CommandManager {
 
     public synchronized void clearCurrentCommand() {
         currentCommand = null;
+        changePublisher.notifyObservers();
     }
 
     public synchronized String getCurrentCommandString() {

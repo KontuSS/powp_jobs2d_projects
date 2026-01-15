@@ -75,7 +75,7 @@ public class CommandManagerWindow extends JFrame implements WindowComponent {
 
     private void clearCommand() {
         commandManager.clearCurrentCommand();
-        currentCommandField.setText(commandManager.getCurrentCommandString());
+        updateCurrentCommandField();
     }
 
     public void updateCurrentCommandField() {
