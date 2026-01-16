@@ -27,16 +27,12 @@ public class SelectImportCommandOptionListener implements ActionListener {
         if (response == JFileChooser.APPROVE_OPTION) {
             File file = fileChooser.getSelectedFile();
             try {
-                // Odczyt pliku do Stringa
                 String content = new String(Files.readAllBytes(file.toPath()));
 
-                // Wywołanie nowego API przygotowanego przez kolegę w CommandManager
                 commandManager.importCurrentCommandFromText(content, new JsonCommandImportParser());
 
-                // Feedback dla użytkownika (Success)
                 JOptionPane.showMessageDialog(null, "Command imported successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
             } catch (Exception ex) {
-                // Feedback dla użytkownika (Error)
                 JOptionPane.showMessageDialog(null, "Error during import: " + ex.getMessage(), "Import Error", JOptionPane.ERROR_MESSAGE);
             }
         }
