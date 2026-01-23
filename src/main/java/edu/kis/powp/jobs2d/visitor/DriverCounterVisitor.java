@@ -20,6 +20,7 @@ public class DriverCounterVisitor implements DriverVisitor {
     private int lineDriverAdapterCount = 0;
     private int transformerDriverDecoratorCount = 0;
     private int usageTrackingDecoratorCount = 0;
+    private int recordingDriverDecoratorCount = 0;
 
     private DriverCounterVisitor() {
     }
@@ -112,7 +113,7 @@ public class DriverCounterVisitor implements DriverVisitor {
 
     @Override
     public void visit(RecordingDriverDecorator recordingDriverDecorator) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        this.recordingDriverDecoratorCount++;
+        recordingDriverDecorator.getDelegate().accept(this);
     }
 }
