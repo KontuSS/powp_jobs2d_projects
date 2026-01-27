@@ -133,7 +133,6 @@ public class TestJobs2dApp {
         VisitableJob2dDriver flippedDriver = DriverFeatureFactory.createFlipDriver(basicLineDriver, true, false);
         DriverFeature.addDriver("Basic Line + Flip Horizontal", flippedDriver);
 
-        DriverFeature.updateDriverInfo();
     }
 
     private static void setupWindows(Application application) {
