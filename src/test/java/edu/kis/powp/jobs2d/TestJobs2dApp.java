@@ -51,7 +51,9 @@ public class TestJobs2dApp {
         SelectCountDriverOptionListener selectCountDriverOptionListener = new SelectCountDriverOptionListener();
         SelectValidateCanvasBoundsOptionListener selectValidateCanvasBoundsOptionListener = new SelectValidateCanvasBoundsOptionListener(
                 CommandsFeature.getDriverCommandManager(), logger);
-
+        SelectDisplayCommandHistoryOptionListener selectDisplayHistoryListener = new SelectDisplayCommandHistoryOptionListener();
+        
+        application.addTest("Display Command History", selectDisplayHistoryListener);
         application.addTest("Figure Joe 1", selectTestFigureOptionListener);
         application.addTest("Figure Joe 2", selectTestFigure2OptionListener);
         application.addTest("Figure House - CompoundCommand", selectTestCompoundCommandOptionListener);
